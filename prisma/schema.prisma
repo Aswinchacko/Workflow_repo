@@ -66,8 +66,27 @@ model User {
   employeeId String   @unique
   employee   Employee @relation(fields: [employeeId], references: [id])
 
+  // WebAuthn (fingerprint/Face/PIN) for confirming check-in/out.
+  currentChallenge String?
+  authenticators   Authenticator[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Authenticator {
+  id           String   @id @default(cuid())
+  credentialID String   @unique // base64url
+  publicKey    Bytes
+  counter      Int      @default(0)
+  transports   String? // JSON array of transports
+  deviceLabel  String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  lastUsedAt DateTime @default(now())
 }
 
 model ProcurementRequest {

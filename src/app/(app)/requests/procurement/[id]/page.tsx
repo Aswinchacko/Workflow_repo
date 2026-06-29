@@ -8,8 +8,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { RequestTimeline, type TimelineStep } from "@/components/request-timeline";
 import { DecisionForm } from "@/components/decision-form";
 import { formatCurrency } from "@/lib/utils";
+import { fmtDate } from "@/lib/datetime";
 import type { RequestStatus } from "@/lib/enums";
-import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
 
 export default async function ProcurementDetailPage({
@@ -69,7 +69,7 @@ export default async function ProcurementDetailPage({
             <Detail label="Quantity" value={`${r.quantity} ${r.unit}`} />
             <Detail label="Project / Site" value={r.project} />
             {r.neededByDate && (
-              <Detail label="Needed by" value={format(r.neededByDate, "dd MMM yyyy")} />
+              <Detail label="Needed by" value={fmtDate(r.neededByDate)} />
             )}
             {r.estCost != null && (
               <Detail label="Estimated cost" value={formatCurrency(r.estCost)} />

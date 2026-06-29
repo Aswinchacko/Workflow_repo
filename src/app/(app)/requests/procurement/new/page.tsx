@@ -4,10 +4,12 @@ import { createProcurement } from "@/app/(app)/requests/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { tomorrowYmd } from "@/lib/datetime";
 import { ChevronLeft } from "lucide-react";
 
 export default async function NewProcurementPage() {
   await requireUser();
+  const minNeededBy = tomorrowYmd();
 
   return (
     <div className="space-y-5 lg:mx-auto lg:max-w-2xl">
@@ -65,8 +67,14 @@ export default async function NewProcurementPage() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <Label htmlFor="neededByDate">Needed by</Label>
-                <Input id="neededByDate" name="neededByDate" type="date" />
+                <Label htmlFor="neededByDate">Needed by *</Label>
+                <Input
+                  id="neededByDate"
+                  name="neededByDate"
+                  type="date"
+                  min={minNeededBy}
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="estCost">Estimated cost (AED)</Label>

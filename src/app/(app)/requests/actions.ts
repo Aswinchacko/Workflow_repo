@@ -8,6 +8,7 @@ import {
   canApproveProcurement,
   canApproveClaims,
 } from "@/lib/session";
+import { todayYmd } from "@/lib/datetime";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (v == null || v === "") return null;
@@ -34,6 +35,13 @@ export async function createProcurement(formData: FormData) {
   }
 
   const neededBy = str(formData.get("neededByDate"));
+  if (!neededBy) {
+    throw new Error("Please choose the date you need this by.");
+  }
+  // Must be a strictly future date (compared in the company timezone).
+  if (neededBy <= todayYmd()) {
+    throw new Error("The needed-by date must be in the future.");
+  }
 
   await prisma.procurementRequest.create({
     data: {
@@ -41,7 +49,7 @@ export async function createProcurement(formData: FormData) {
       item,
       quantity,
       unit,
-      neededByDate: neededBy ? new Date(neededBy) : null,
+      neededByDate: new Date(neededBy),
       reason: str(formData.get("reason")) || null,
       estCost: num(formData.get("estCost")),
       requesterId: user.employeeId,

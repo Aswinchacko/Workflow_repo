@@ -1,7 +1,9 @@
 import type { EmploymentType } from "@/lib/enums";
+import { COMPANY_TZ } from "./datetime";
 
 // Shift rules. In production these would live in a Shift table per group;
-// for the demo they are simple constants matching the brief.
+// for the demo they are simple constants matching the brief. Hours are in the
+// company timezone (Asia/Dubai).
 export const SHIFT_RULES = {
   OFFICE: {
     startHour: 8, // 08:00 expected start
@@ -19,20 +21,40 @@ export const SHIFT_RULES = {
   },
 } as const;
 
-export function startOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
+/** Minutes-since-midnight of an instant, read in the company timezone. */
+function wallClockMinutes(date: Date, tz: string = COMPANY_TZ): number {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const h = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+  const m = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+  return h * 60 + m;
+}
+
+/** The day-bucket key for an instant: UTC-midnight Date of the Dubai calendar
+ *  date. Used as the unique (employee, date) key so a "day" means a Dubai day
+ *  regardless of where the server runs. */
+export function attendanceDayKey(date: Date = new Date()): Date {
+  const ymd = new Intl.DateTimeFormat("en-CA", {
+    timeZone: COMPANY_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+  return new Date(`${ymd}T00:00:00.000Z`);
 }
 
 export function isLateCheckIn(checkIn: Date, type: EmploymentType): boolean {
   const rule = SHIFT_RULES[type];
-  const threshold = new Date(checkIn);
-  threshold.setHours(rule.startHour, rule.startMinute + rule.graceMinutes, 0, 0);
-  return checkIn.getTime() > threshold.getTime();
+  const threshold = rule.startHour * 60 + rule.startMinute + rule.graceMinutes;
+  return wallClockMinutes(checkIn) > threshold;
 }
 
-/** Returns worked hours (2dp) and overtime hours for a completed shift. */
+/** Worked hours (2dp) and overtime hours. Based on elapsed duration, so it is
+ *  timezone-independent. */
 export function computeShift(
   checkIn: Date,
   checkOut: Date,

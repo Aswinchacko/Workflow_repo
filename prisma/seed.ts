@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import type { EmploymentType, Role } from "../src/lib/enums";
-import { computeShift, isLateCheckIn, startOfDay } from "../src/lib/attendance";
+import { computeShift, isLateCheckIn, attendanceDayKey } from "../src/lib/attendance";
 
 const prisma = new PrismaClient();
 
@@ -328,7 +328,7 @@ async function main() {
     await prisma.attendance.create({
       data: {
         employeeId: siteEmp,
-        date: startOfDay(day),
+        date: attendanceDayKey(day),
         checkIn: sIn,
         checkOut: sOut,
         hoursWorked: sCalc.hoursWorked,
@@ -345,7 +345,7 @@ async function main() {
     await prisma.attendance.create({
       data: {
         employeeId: officeEmp,
-        date: startOfDay(day),
+        date: attendanceDayKey(day),
         checkIn: oIn,
         checkOut: oOut,
         hoursWorked: oCalc.hoursWorked,

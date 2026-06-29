@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { fmtDateTime } from "@/lib/datetime";
 import { Check, Clock, X, Wallet } from "lucide-react";
 
 export type TimelineStep = {
@@ -46,9 +46,7 @@ export function RequestTimeline({ steps }: { steps: TimelineStep[] }) {
             <p className="font-semibold leading-tight">{s.label}</p>
             {s.detail && <p className="text-sm text-muted-foreground">{s.detail}</p>}
             {s.at && (
-              <p className="text-xs text-muted-foreground">
-                {format(s.at, "dd MMM yyyy, h:mm a")}
-              </p>
+              <p className="text-xs text-muted-foreground">{fmtDateTime(s.at)}</p>
             )}
           </div>
         </li>

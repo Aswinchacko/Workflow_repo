@@ -10,8 +10,8 @@ import { DecisionForm } from "@/components/decision-form";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, parseJsonArray } from "@/lib/utils";
+import { fmtDate } from "@/lib/datetime";
 import type { ClaimStatus } from "@/lib/enums";
-import { format } from "date-fns";
 import { ChevronLeft, FileText } from "lucide-react";
 
 export default async function PettyCashDetailPage({
@@ -87,7 +87,7 @@ export default async function PettyCashDetailPage({
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               <Detail label="Category" value={c.category} />
-              <Detail label="Date spent" value={format(c.spentDate, "dd MMM yyyy")} />
+              <Detail label="Date spent" value={fmtDate(c.spentDate)} />
               {c.description && <Detail label="Description" value={c.description} />}
             </CardContent>
           </Card>

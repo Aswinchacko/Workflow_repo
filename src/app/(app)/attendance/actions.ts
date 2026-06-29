@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/session";
 import {
   computeShift,
   isLateCheckIn,
-  startOfDay,
+  attendanceDayKey,
 } from "@/lib/attendance";
 import type { EmploymentType } from "@/lib/enums";
 
@@ -23,7 +23,7 @@ export async function toggleAttendance() {
 
   const type = employee.employmentType as EmploymentType;
   const now = new Date();
-  const day = startOfDay(now);
+  const day = attendanceDayKey(now);
 
   const existing = await prisma.attendance.findUnique({
     where: { employeeId_date: { employeeId: user.employeeId, date: day } },

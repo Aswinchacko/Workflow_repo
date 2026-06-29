@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency, cn } from "@/lib/utils";
+import { fmtDate } from "@/lib/datetime";
 import type { ClaimStatus } from "@/lib/enums";
-import { format } from "date-fns";
 import { Plus, ChevronRight } from "lucide-react";
 
 export default async function PettyCashListPage() {
@@ -45,9 +45,9 @@ export default async function PettyCashListPage() {
               <Row
                 key={i.id}
                 href={`/requests/petty-cash/${i.id}`}
-                title={`${formatCurrency(i.amount)} · ${i.category}`}
-                subtitle={`${i.requester.name} · ${format(i.spentDate, "dd MMM")}`}
-                status={i.status as ClaimStatus}
+              title={`${formatCurrency(i.amount)} · ${i.category}`}
+              subtitle={`${i.requester.name} · ${fmtDate(i.spentDate)}`}
+              status={i.status as ClaimStatus}
               />
             ))}
           </Section>
@@ -58,9 +58,9 @@ export default async function PettyCashListPage() {
             <Row
               key={i.id}
               href={`/requests/petty-cash/${i.id}`}
-              title={`${formatCurrency(i.amount)} · ${i.category}`}
-              subtitle={format(i.spentDate, "dd MMM yyyy")}
-              status={i.status as ClaimStatus}
+            title={`${formatCurrency(i.amount)} · ${i.category}`}
+            subtitle={fmtDate(i.spentDate)}
+            status={i.status as ClaimStatus}
             />
           ))}
         </Section>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireUser, canApproveProcurement, canApproveClaims } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { startOfDay } from "@/lib/attendance";
+import { attendanceDayKey } from "@/lib/attendance";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ export default async function HomePage() {
   const user = await requireUser();
 
   const today = await prisma.attendance.findUnique({
-    where: { employeeId_date: { employeeId: user.employeeId, date: startOfDay(new Date()) } },
+    where: { employeeId_date: { employeeId: user.employeeId, date: attendanceDayKey(new Date()) } },
   });
 
   const isCheckedIn = !!today?.checkIn && !today?.checkOut;

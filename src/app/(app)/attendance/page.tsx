@@ -1,12 +1,12 @@
 import { requireUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { startOfDay, SHIFT_RULES } from "@/lib/attendance";
+import { attendanceDayKey, SHIFT_RULES } from "@/lib/attendance";
+import { fmtFullDate, fmtTime, fmtDayNum, fmtMonth } from "@/lib/datetime";
 import { employmentLabels } from "@/lib/labels";
 import type { EmploymentType } from "@/lib/enums";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckButton } from "@/components/check-button";
+import { CheckInGuard } from "@/components/check-in-guard";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 import { Clock, AlertCircle, TrendingUp } from "lucide-react";
 
 export default async function AttendancePage() {
@@ -19,7 +19,7 @@ export default async function AttendancePage() {
   const type = (employee?.employmentType ?? "OFFICE") as EmploymentType;
   const rule = SHIFT_RULES[type];
 
-  const today = startOfDay(new Date());
+  const today = attendanceDayKey(new Date());
   const todayRec = await prisma.attendance.findUnique({
     where: { employeeId_date: { employeeId: user.employeeId, date: today } },
   });
@@ -51,7 +51,7 @@ export default async function AttendancePage() {
         <CardContent className="space-y-4 pt-5">
           <div className="text-center">
             <p className="text-sm font-medium text-muted-foreground">
-              {format(new Date(), "EEEE, dd MMMM yyyy")}
+              {fmtFullDate(new Date())}
             </p>
             <div className="mt-2 flex items-center justify-center gap-6">
               <TimeStat label="Check In" value={todayRec?.checkIn} />
@@ -65,7 +65,7 @@ export default async function AttendancePage() {
             )}
           </div>
 
-          <CheckButton state={state} />
+          <CheckInGuard state={state} />
 
           {state === "done" && todayRec && (
             <p className="text-center text-sm text-muted-foreground">
@@ -99,14 +99,14 @@ export default async function AttendancePage() {
               history.map((rec) => (
                 <div key={rec.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="w-12 text-center">
-                    <p className="text-lg font-bold leading-none">{format(rec.date, "dd")}</p>
-                    <p className="text-xs text-muted-foreground">{format(rec.date, "MMM")}</p>
+                    <p className="text-lg font-bold leading-none">{fmtDayNum(rec.date)}</p>
+                    <p className="text-xs text-muted-foreground">{fmtMonth(rec.date)}</p>
                   </div>
                   <div className="flex-1">
                     <p className="flex items-center gap-1.5 font-semibold">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      {rec.checkIn ? format(rec.checkIn, "h:mm a") : "—"} –{" "}
-                      {rec.checkOut ? format(rec.checkOut, "h:mm a") : "—"}
+                      {rec.checkIn ? fmtTime(rec.checkIn) : "—"} –{" "}
+                      {rec.checkOut ? fmtTime(rec.checkOut) : "—"}
                     </p>
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {rec.isLate && <Tag className="bg-amber-100 text-amber-800">Late</Tag>}
@@ -130,13 +130,12 @@ export default async function AttendancePage() {
 }
 
 function TimeStat({ label, value }: { label: string; value?: Date | null }) {
+  const [time, period] = value ? fmtTime(value).split(" ") : ["--:--", ""];
   return (
     <div>
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="text-2xl font-extrabold tabular-nums">
-        {value ? format(value, "h:mm") : "--:--"}
-      </p>
-      <p className="text-xs text-muted-foreground">{value ? format(value, "a") : ""}</p>
+      <p className="text-2xl font-extrabold tabular-nums">{time}</p>
+      <p className="text-xs text-muted-foreground">{period}</p>
     </div>
   );
 }
