@@ -8,7 +8,7 @@ import {
 } from "@simplewebauthn/browser";
 import { toggleAttendance } from "@/app/(app)/attendance/actions";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, CheckCircle2, Loader2, Fingerprint, Monitor } from "lucide-react";
+import { LogIn, LogOut, CheckCircle2, Loader2, Fingerprint } from "lucide-react";
 
 type State = "in" | "out" | "done";
 
@@ -52,10 +52,9 @@ async function enrollOnThisDevice() {
   const reg = await postJSON("/api/webauthn/register/options");
   const attestation = await startRegistration({ optionsJSON: reg.options });
   const result = await postJSON("/api/webauthn/register/verify", attestation);
-  if (!result.verified) throw new Error("Could not set up device verification.");
+  if (!result.verified) throw new Error("Could not set up fingerprint/PIN.");
 }
 
-/** True when auth failed because this device has no passkey yet (e.g. enrolled on phone). */
 function needsEnrollmentOnThisDevice(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
   const name = err instanceof DOMException ? err.name : "";
@@ -65,13 +64,12 @@ function needsEnrollmentOnThisDevice(err: unknown): boolean {
   );
 }
 
-async function verifyIdentity(userId: string) {
+/** Mobile only: fingerprint or screen PIN via WebAuthn. */
+async function verifyMobileIdentity(userId: string) {
   const auth = await postJSON("/api/webauthn/authenticate/options");
   const setUpHere = isDeviceSetUp(userId);
 
   if (!auth.hasCredentials || !setUpHere) {
-    // First time on this device/browser — set up Windows Hello / phone PIN directly
-    // (skips the confusing "No passkeys available" popup).
     await enrollOnThisDevice();
     markDeviceSetUp(userId);
     return;
@@ -92,60 +90,126 @@ async function verifyIdentity(userId: string) {
   }
 }
 
-function friendlyError(raw: string, mobile: boolean): string {
+function mobileErrorMessage(raw: string): string {
+  if (/credential manager|NotSupported|not supported/i.test(raw)) {
+    return "Could not use fingerprint/PIN. Open this site in Chrome or Safari (not an in-app browser), then try again.";
+  }
+  if (/NotAllowed|cancel|abort/i.test(raw)) {
+    return "Verification cancelled. Use your fingerprint or screen PIN when prompted.";
+  }
   if (/USB|Bluetooth|security key/i.test(raw)) {
-    return mobile
-      ? "Use your phone fingerprint or screen PIN only — not a security key."
-      : "Use your Windows PIN or password only — do not choose a USB or Bluetooth key.";
-  }
-  if (/NotAllowed|timed out|cancel|abort/i.test(raw)) {
-    return mobile
-      ? "Verification cancelled. When the prompt appears, use your phone fingerprint or screen PIN."
-      : "Verification cancelled. When Windows Hello appears, enter your PC PIN or password. Do not pick a USB key.";
-  }
-  if (/NotSupported|not supported|secure context/i.test(raw)) {
-    return mobile
-      ? "Your phone browser does not support fingerprint/PIN verification here."
-      : "Set up Windows Hello (PIN) in PC Settings, then try again.";
+    return "Use your phone fingerprint or screen PIN only.";
   }
   return raw;
 }
 
-export function CheckInGuard({ state, userId }: { state: State; userId: string }) {
+/** PC: tap → confirm → check in (no fingerprint/PIN). */
+function DesktopCheckIn({ state }: { state: "in" | "out" }) {
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const mobile = isMobileDevice();
+  const [confirming, setConfirming] = useState(false);
+  const [pending, setPending] = useState(false);
+  const isCheckIn = state === "in";
+  const actionLabel = isCheckIn ? "Check In" : "Check Out";
 
-  if (state === "done") {
+  async function onConfirm() {
+    setPending(true);
+    try {
+      await toggleAttendance();
+      setConfirming(false);
+      router.refresh();
+    } finally {
+      setPending(false);
+    }
+  }
+
+  if (!confirming) {
     return (
-      <Button size="lg" variant="outline" className="h-20 w-full text-lg" disabled>
-        <CheckCircle2 className="h-6 w-6 text-emerald-600" /> Shift complete
-      </Button>
+      <div className="space-y-2">
+        <Button
+          type="button"
+          size="lg"
+          variant={isCheckIn ? "primary" : "destructive"}
+          className="h-20 w-full text-xl"
+          onClick={() => setConfirming(true)}
+        >
+          {isCheckIn ? (
+            <>
+              <LogIn className="h-7 w-7" /> Check In
+            </>
+          ) : (
+            <>
+              <LogOut className="h-7 w-7" /> Check Out
+            </>
+          )}
+        </Button>
+        <p className="text-center text-xs text-muted-foreground">
+          Tap to {actionLabel.toLowerCase()}. You will be asked to confirm — this cannot be undone.
+        </p>
+      </div>
     );
   }
 
+  return (
+    <div className="space-y-3 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
+      <p className="text-center text-base font-bold">Confirm {actionLabel}?</p>
+      <p className="text-center text-sm text-muted-foreground">
+        This records your time now and cannot be changed.
+      </p>
+      <Button
+        type="button"
+        size="lg"
+        variant={isCheckIn ? "primary" : "destructive"}
+        className="h-20 w-full text-xl"
+        onClick={onConfirm}
+        disabled={pending}
+      >
+        {pending ? (
+          <Loader2 className="h-7 w-7 animate-spin" />
+        ) : isCheckIn ? (
+          <>
+            <LogIn className="h-7 w-7" /> Yes, Check In
+          </>
+        ) : (
+          <>
+            <LogOut className="h-7 w-7" /> Yes, Check Out
+          </>
+        )}
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        className="w-full"
+        disabled={pending}
+        onClick={() => setConfirming(false)}
+      >
+        Cancel
+      </Button>
+    </div>
+  );
+}
+
+/** Mobile: fingerprint / screen PIN, then check in. */
+function MobileCheckIn({ state, userId }: { state: "in" | "out"; userId: string }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
   const isCheckIn = state === "in";
 
   async function handle() {
-    setBusy(true);
+    setPending(true);
     setError("");
     try {
-      await verifyIdentity(userId);
+      await verifyMobileIdentity(userId);
       await toggleAttendance();
       router.refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Something went wrong.";
-      setError(friendlyError(msg, mobile));
+      setError(mobileErrorMessage(msg));
     } finally {
-      setBusy(false);
+      setPending(false);
     }
   }
-
-  const HintIcon = mobile ? Fingerprint : Monitor;
-  const hint = mobile
-    ? "Use your phone fingerprint or screen PIN. This cannot be undone."
-    : "First time on this laptop? If you see “No passkeys”, click Close — then enter your Windows PIN to set up. After that, check-in uses your PC PIN only.";
 
   return (
     <div className="space-y-2">
@@ -155,9 +219,9 @@ export function CheckInGuard({ state, userId }: { state: State; userId: string }
         variant={isCheckIn ? "primary" : "destructive"}
         className="h-20 w-full text-xl"
         onClick={handle}
-        disabled={busy}
+        disabled={pending}
       >
-        {busy ? (
+        {pending ? (
           <Loader2 className="h-7 w-7 animate-spin" />
         ) : isCheckIn ? (
           <>
@@ -169,12 +233,10 @@ export function CheckInGuard({ state, userId }: { state: State; userId: string }
           </>
         )}
       </Button>
-
       <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-        <HintIcon className="h-4 w-4 shrink-0" />
-        {hint}
+        <Fingerprint className="h-4 w-4 shrink-0" />
+        Use your fingerprint or screen PIN. This cannot be undone.
       </p>
-
       {error && (
         <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-sm font-medium text-destructive">
           {error}
@@ -182,4 +244,22 @@ export function CheckInGuard({ state, userId }: { state: State; userId: string }
       )}
     </div>
   );
+}
+
+export function CheckInGuard({ state, userId }: { state: State; userId: string }) {
+  const mobile = isMobileDevice();
+
+  if (state === "done") {
+    return (
+      <Button size="lg" variant="outline" className="h-20 w-full text-lg" disabled>
+        <CheckCircle2 className="h-6 w-6 text-emerald-600" /> Shift complete
+      </Button>
+    );
+  }
+
+  if (mobile) {
+    return <MobileCheckIn state={state} userId={userId} />;
+  }
+
+  return <DesktopCheckIn state={state} />;
 }

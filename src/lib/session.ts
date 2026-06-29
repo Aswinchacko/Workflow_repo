@@ -34,3 +34,6 @@ export const canApproveClaims = (role: Role) =>
 
 /** Full profile details are visible to managers/HR; everyone else sees basics. */
 export const canSeeFullProfile = (role: Role) => isManagerLike(role);
+
+/** Managers and HR can mark check-in/out for their team. */
+export const canMarkTeamAttendance = (role: Role) => isManagerLike(role);

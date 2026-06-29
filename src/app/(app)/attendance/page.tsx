@@ -1,4 +1,5 @@
-import { requireUser } from "@/lib/session";
+import Link from "next/link";
+import { requireUser, canMarkTeamAttendance } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { attendanceDayKey, SHIFT_RULES } from "@/lib/attendance";
 import { fmtFullDate, fmtTime, fmtDayNum, fmtMonth } from "@/lib/datetime";
@@ -7,7 +8,7 @@ import type { EmploymentType } from "@/lib/enums";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckInGuard } from "@/components/check-in-guard";
 import { cn } from "@/lib/utils";
-import { Clock, AlertCircle, TrendingUp } from "lucide-react";
+import { Clock, AlertCircle, TrendingUp, Users, ChevronRight } from "lucide-react";
 
 export default async function AttendancePage() {
   const user = await requireUser();
@@ -44,6 +45,25 @@ export default async function AttendancePage() {
             : `Standard ${rule.standardHours}h day`}
         </p>
       </div>
+
+      {canMarkTeamAttendance(user.role) && (
+        <Link href="/attendance/team">
+          <Card className="border-primary/30 bg-primary/5 transition active:scale-[0.99]">
+            <CardContent className="flex items-center gap-3 pt-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <Users className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold">Mark team attendance</p>
+                <p className="text-sm text-muted-foreground">
+                  Check in or out for your crew
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-primary" />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
       {/* Today card */}
