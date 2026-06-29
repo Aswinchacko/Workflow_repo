@@ -314,47 +314,46 @@ async function main() {
   });
 
   console.log("Creating attendance history...");
-  // Site worker (with overtime) + office worker, last 5 working days.
-  const siteEmp = empByUserId["EMP1005"];
-  const officeEmp = empByUserId["EMP1008"];
+  // Last 5 days for every employee — site vs office shift rules from employment type.
+  const attendanceRows: Parameters<typeof prisma.attendance.createMany>[0]["data"] = [];
 
-  for (let i = 1; i <= 5; i++) {
-    const day = daysAgo(i);
-
-    // Site worker: 07:00 -> 17:30 (10.5h => overtime beyond 8h)
-    const sIn = at(day, 7, i === 2 ? 30 : 0); // one late day
-    const sOut = at(day, 17, 30);
-    const sCalc = computeShift(sIn, sOut, "SITE");
-    await prisma.attendance.create({
-      data: {
-        employeeId: siteEmp,
-        date: attendanceDayKey(day),
-        checkIn: sIn,
-        checkOut: sOut,
-        hoursWorked: sCalc.hoursWorked,
-        overtimeHours: sCalc.overtimeHours,
-        isLate: isLateCheckIn(sIn, "SITE"),
-        source: "SELF",
-      },
-    });
-
-    // Office worker: 08:00 -> 18:00 (10h, no overtime)
-    const oIn = at(day, 8, i === 4 ? 25 : 5);
-    const oOut = at(day, 18, 0);
-    const oCalc = computeShift(oIn, oOut, "OFFICE");
-    await prisma.attendance.create({
-      data: {
-        employeeId: officeEmp,
-        date: attendanceDayKey(day),
-        checkIn: oIn,
-        checkOut: oOut,
-        hoursWorked: oCalc.hoursWorked,
-        overtimeHours: oCalc.overtimeHours,
-        isLate: isLateCheckIn(oIn, "OFFICE"),
-        source: "SELF",
-      },
-    });
+  for (const p of people) {
+    const employeeId = empByUserId[p.userId];
+    for (let i = 1; i <= 5; i++) {
+      const day = daysAgo(i);
+      if (p.type === "SITE") {
+        const checkIn = at(day, 7, i === 2 ? 30 : 0);
+        const checkOut = at(day, 17, 30);
+        const calc = computeShift(checkIn, checkOut, "SITE");
+        attendanceRows.push({
+          employeeId,
+          date: attendanceDayKey(day),
+          checkIn,
+          checkOut,
+          hoursWorked: calc.hoursWorked,
+          overtimeHours: calc.overtimeHours,
+          isLate: isLateCheckIn(checkIn, "SITE"),
+          source: "SELF",
+        });
+      } else {
+        const checkIn = at(day, 8, i === 4 ? 25 : 5);
+        const checkOut = at(day, 18, 0);
+        const calc = computeShift(checkIn, checkOut, "OFFICE");
+        attendanceRows.push({
+          employeeId,
+          date: attendanceDayKey(day),
+          checkIn,
+          checkOut,
+          hoursWorked: calc.hoursWorked,
+          overtimeHours: calc.overtimeHours,
+          isLate: isLateCheckIn(checkIn, "OFFICE"),
+          source: "SELF",
+        });
+      }
+    }
   }
+
+  await prisma.attendance.createMany({ data: attendanceRows });
 
   console.log("\nSeed complete.");
   console.log("------------------------------------------");
