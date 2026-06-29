@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, canMarkTeamAttendance } from "@/lib/session";
+import { requireUser, canMarkTeamAttendance } from "@/lib/session";
 import { canMarkEmployee } from "@/lib/team-attendance";
 import {
   computeShift,
@@ -13,16 +12,15 @@ import {
 import type { EmploymentType } from "@/lib/enums";
 
 export async function toggleAttendance() {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
 
   const employee = await prisma.employee.findUnique({
     where: { id: user.employeeId },
     select: { employmentType: true },
   });
-  if (!employee) throw new Error("Employee not found.");
+  if (!employee) throw new Error("Account not found. Sign out and sign in again.");
 
-  const type = employee.employmentType as EmploymentType;
+  const type: EmploymentType = employee.employmentType === "SITE" ? "SITE" : "OFFICE";
   const now = new Date();
   const day = attendanceDayKey(now);
 
@@ -59,8 +57,7 @@ async function supervisorMark(
   targetEmployeeId: string,
   action: "checkIn" | "checkOut"
 ) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
   if (!canMarkTeamAttendance(user.role)) throw new Error("Not allowed.");
 
   const allowed = await canMarkEmployee(user.employeeId, user.role, targetEmployeeId);
@@ -72,7 +69,8 @@ async function supervisorMark(
   });
   if (!employee) throw new Error("Employee not found.");
 
-  const type = employee.employmentType as EmploymentType;
+  const type: EmploymentType =
+    employee.employmentType === "SITE" ? "SITE" : "OFFICE";
   const now = new Date();
   const day = attendanceDayKey(now);
 

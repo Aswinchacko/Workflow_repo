@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import type { Role } from "@/lib/enums";
 
 export async function getCurrentUser() {
@@ -9,10 +10,28 @@ export async function getCurrentUser() {
 }
 
 /** Use in protected pages: redirects to /login if not signed in, and to
- *  /reset-password if the user still needs to set their password. */
+ *  /reset-password if the user still needs to set their password.
+ *  Re-loads the user from the DB so stale JWTs (e.g. after db:seed) don't break pages. */
 export async function requireUser(opts: { allowReset?: boolean } = {}) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) redirect("/login");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
+    include: { employee: { select: { name: true, photoUrl: true } } },
+  });
+  if (!dbUser) redirect("/login");
+
+  const user = {
+    id: sessionUser.id,
+    name: dbUser.employee.name,
+    userId: dbUser.userId,
+    role: dbUser.role as Role,
+    employeeId: dbUser.employeeId,
+    mustResetPassword: dbUser.mustResetPassword,
+    photoUrl: dbUser.employee.photoUrl ?? null,
+  };
+
   if (user.mustResetPassword && !opts.allowReset) redirect("/reset-password");
   return user;
 }

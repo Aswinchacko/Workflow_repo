@@ -17,7 +17,9 @@ export default async function AttendancePage() {
     where: { id: user.employeeId },
     select: { employmentType: true },
   });
-  const type = (employee?.employmentType ?? "OFFICE") as EmploymentType;
+  if (!employee) throw new Error("Account not found. Sign out and sign in again.");
+
+  const type: EmploymentType = employee.employmentType === "SITE" ? "SITE" : "OFFICE";
   const rule = SHIFT_RULES[type];
 
   const today = attendanceDayKey(new Date());
