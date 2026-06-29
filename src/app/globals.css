@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Warm, high-contrast "industrial" palette. Warm hues read more clearly for
+     aging eyes than cool blues; neutrals are warm paper/stone, not cold gray. */
+  --background: 40 33% 98%; /* warm paper */
+  --foreground: 24 22% 12%; /* warm near-black, strong contrast */
+  --card: 0 0% 100%;
+  --card-foreground: 24 22% 12%;
+  --primary: 20 90% 42%; /* burnt construction orange */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 34 30% 93%; /* warm stone */
+  --secondary-foreground: 24 22% 16%;
+  --muted: 34 30% 93%;
+  --muted-foreground: 28 12% 36%; /* darkened for legibility */
+  --destructive: 2 74% 46%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 34 22% 87%;
+  --input: 34 22% 84%;
+  --ring: 20 90% 42%;
+  --radius: 0.85rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Prevent iOS auto-zoom on input focus: inputs use >=16px */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Larger, comfortable base sizing for older users */
+body {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+}

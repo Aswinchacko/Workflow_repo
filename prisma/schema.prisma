@@ -1,0 +1,139 @@
+// Demo uses SQLite for zero-setup local runs.
+// For production (Supabase/Postgres): change provider to "postgresql",
+// set DATABASE_URL to the Supabase connection string, and convert the
+// JSON-string fields (skills, attachments) to native String[] arrays.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled connection (port 6543) for the app
+  directUrl = env("DIRECT_URL") // direct connection (port 5432) for migrations
+}
+
+// Enums and the skills/attachments lists are stored as strings/text, constrained
+// at the application layer (see src/lib/enums.ts). This keeps the same code
+// working on both SQLite (demo) and Postgres (production) with no changes.
+
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  employees Employee[]
+}
+
+model Employee {
+  id               String         @id @default(cuid())
+  name             String
+  photoUrl         String?
+  jobTitle         String
+  employmentType   String         @default("OFFICE") // OFFICE | SITE
+  phone            String?
+  siteAssignment   String?
+  joiningDate      DateTime?
+  skills           String         @default("[]") // JSON array of strings
+  emergencyContact String?
+  visaExpiry       DateTime?
+  laborCardExpiry  DateTime?
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  managerId String?
+  manager   Employee?  @relation("Reports", fields: [managerId], references: [id])
+  reports   Employee[] @relation("Reports")
+
+  user User?
+
+  procurementRequests ProcurementRequest[] @relation("Requester")
+  approvedProcurement ProcurementRequest[] @relation("ProcurementApprover")
+  pettyCashClaims     PettyCashClaim[]     @relation("ClaimRequester")
+  approvedClaims      PettyCashClaim[]     @relation("ClaimApprover")
+  attendance          Attendance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id                String   @id @default(cuid())
+  userId            String   @unique // login handle, admin-generated
+  passwordHash      String
+  mustResetPassword Boolean  @default(true)
+  role              String   @default("EMPLOYEE") // ADMIN_HR | MANAGER | FINANCE | EMPLOYEE
+
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProcurementRequest {
+  id           String        @id @default(cuid())
+  project      String
+  item         String
+  quantity     Float
+  unit         String
+  neededByDate DateTime?
+  reason       String?
+  estCost      Float?
+  photoUrl     String?
+  status       String        @default("PENDING") // PENDING | APPROVED | REJECTED
+  decisionNote String?
+  decidedAt    DateTime?
+
+  requesterId String
+  requester   Employee @relation("Requester", fields: [requesterId], references: [id])
+
+  approverId String?
+  approver   Employee? @relation("ProcurementApprover", fields: [approverId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PettyCashClaim {
+  id           String      @id @default(cuid())
+  amount       Float
+  category     String
+  spentDate    DateTime
+  description  String?
+  attachments  String      @default("[]") // JSON array of file paths
+  status       String      @default("PENDING") // PENDING | APPROVED | REJECTED | PAID
+  decisionNote String?
+  decidedAt    DateTime?
+  paymentRef   String?
+  paidAt       DateTime?
+
+  requesterId String
+  requester   Employee @relation("ClaimRequester", fields: [requesterId], references: [id])
+
+  approverId String?
+  approver   Employee? @relation("ClaimApprover", fields: [approverId], references: [id])
+
+  linkedProcurementId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attendance {
+  id            String    @id @default(cuid())
+  date          DateTime // day (midnight) the record belongs to
+  checkIn       DateTime?
+  checkOut      DateTime?
+  hoursWorked   Float?
+  isLate        Boolean   @default(false)
+  overtimeHours Float     @default(0)
+  source        String    @default("SELF")
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, date])
+}

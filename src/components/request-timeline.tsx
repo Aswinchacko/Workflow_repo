@@ -1,0 +1,58 @@
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Check, Clock, X, Wallet } from "lucide-react";
+
+export type TimelineStep = {
+  label: string;
+  detail?: string | null;
+  at?: Date | null;
+  state: "done" | "current" | "rejected" | "paid" | "upcoming";
+};
+
+const dot: Record<TimelineStep["state"], string> = {
+  done: "bg-emerald-600 text-white",
+  current: "bg-amber-500 text-white",
+  rejected: "bg-red-600 text-white",
+  paid: "bg-blue-600 text-white",
+  upcoming: "bg-secondary text-muted-foreground",
+};
+
+function Icon({ state }: { state: TimelineStep["state"] }) {
+  const cls = "h-4 w-4";
+  if (state === "rejected") return <X className={cls} />;
+  if (state === "current") return <Clock className={cls} />;
+  if (state === "paid") return <Wallet className={cls} />;
+  if (state === "done") return <Check className={cls} />;
+  return <Clock className={cls} />;
+}
+
+export function RequestTimeline({ steps }: { steps: TimelineStep[] }) {
+  return (
+    <ol className="space-y-0">
+      {steps.map((s, idx) => (
+        <li key={idx} className="flex gap-3">
+          <div className="flex flex-col items-center">
+            <span
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-full",
+                dot[s.state]
+              )}
+            >
+              <Icon state={s.state} />
+            </span>
+            {idx < steps.length - 1 && <span className="w-px flex-1 bg-border" />}
+          </div>
+          <div className={cn("pb-5", idx === steps.length - 1 && "pb-0")}>
+            <p className="font-semibold leading-tight">{s.label}</p>
+            {s.detail && <p className="text-sm text-muted-foreground">{s.detail}</p>}
+            {s.at && (
+              <p className="text-xs text-muted-foreground">
+                {format(s.at, "dd MMM yyyy, h:mm a")}
+              </p>
+            )}
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
