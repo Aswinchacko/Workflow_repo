@@ -85,7 +85,7 @@ export default async function AttendancePage() {
             )}
           </div>
 
-          <CheckInGuard state={state} userId={user.userId} />
+          <CheckInGuard state={state} />
 
           {state === "done" && todayRec && (
             <p className="text-center text-sm text-muted-foreground">
