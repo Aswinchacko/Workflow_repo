@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import type { EmploymentType, Role } from "../src/lib/enums";
 import { computeShift, isLateCheckIn, attendanceDayKey } from "../src/lib/attendance";
@@ -315,7 +315,7 @@ async function main() {
 
   console.log("Creating attendance history...");
   // Last 5 days for every employee — site vs office shift rules from employment type.
-  const attendanceRows: Parameters<typeof prisma.attendance.createMany>[0]["data"] = [];
+  const attendanceRows: Prisma.AttendanceCreateManyInput[] = [];
 
   for (const p of people) {
     const employeeId = empByUserId[p.userId];
