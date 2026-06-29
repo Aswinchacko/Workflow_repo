@@ -3,12 +3,13 @@ import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getRpId } from "@/lib/webauthn";
+import { rpFromRequest } from "@/lib/webauthn";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(req: Request) {
+  const { rpID } = rpFromRequest(req);
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -22,7 +23,7 @@ export async function POST() {
   }
 
   const options = await generateAuthenticationOptions({
-    rpID: getRpId(),
+    rpID,
     allowCredentials: creds.map((c) => ({
       id: c.credentialID,
       transports: c.transports ? JSON.parse(c.transports) : undefined,

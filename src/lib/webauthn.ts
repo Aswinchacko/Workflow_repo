@@ -1,15 +1,19 @@
-// WebAuthn relying-party config. Derived from NEXTAUTH_URL so it matches the
-// deployed domain (rpID must equal the site's hostname; origin must be exact).
+// WebAuthn relying-party config. Derived from the ACTUAL incoming request so it
+// always matches the domain the user is on (localhost, Vercel, custom domain,
+// preview URLs) without needing any env var. rpID must equal the site hostname;
+// origin must match the browser origin exactly.
 export const rpName = "WorkSite Portal";
 
-function appUrl(): URL {
-  return new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000");
-}
+export function rpFromRequest(req: Request): { rpID: string; origin: string } {
+  const host =
+    req.headers.get("x-forwarded-host") ??
+    req.headers.get("host") ??
+    "localhost:3000";
+  const proto =
+    req.headers.get("x-forwarded-proto") ??
+    (host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
 
-export function getRpId(): string {
-  return appUrl().hostname; // e.g. "localhost" or "your-app.vercel.app"
-}
-
-export function getOrigin(): string {
-  return appUrl().origin; // e.g. "https://your-app.vercel.app"
+  const rpID = host.split(":")[0]; // strip port -> "localhost" or "app.vercel.app"
+  const origin = `${proto}://${host}`;
+  return { rpID, origin };
 }

@@ -3,12 +3,13 @@ import { verifyRegistrationResponse } from "@simplewebauthn/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getOrigin, getRpId } from "@/lib/webauthn";
+import { rpFromRequest } from "@/lib/webauthn";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  const { rpID, origin } = rpFromRequest(req);
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -27,8 +28,8 @@ export async function POST(req: Request) {
     verification = await verifyRegistrationResponse({
       response: body,
       expectedChallenge: user.currentChallenge,
-      expectedOrigin: getOrigin(),
-      expectedRPID: getRpId(),
+      expectedOrigin: origin,
+      expectedRPID: rpID,
       requireUserVerification: true,
     });
   } catch (e) {
