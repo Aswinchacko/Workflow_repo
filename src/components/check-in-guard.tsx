@@ -12,15 +12,20 @@ export function CheckInGuard({ state }: { state: State }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
   const isCheckIn = state === "in";
   const actionLabel = isCheckIn ? "Check In" : "Check Out";
 
   async function onConfirm() {
     setPending(true);
+    setError("");
     try {
       await toggleAttendance();
       setConfirming(false);
       router.refresh();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not record attendance. Try again.";
+      setError(msg);
     } finally {
       setPending(false);
     }
@@ -93,10 +98,18 @@ export function CheckInGuard({ state }: { state: State }) {
         size="lg"
         className="w-full"
         disabled={pending}
-        onClick={() => setConfirming(false)}
+        onClick={() => {
+          setConfirming(false);
+          setError("");
+        }}
       >
         Cancel
       </Button>
+      {error && (
+        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-sm font-medium text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
