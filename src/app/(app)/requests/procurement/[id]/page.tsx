@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RequestTimeline, type TimelineStep } from "@/components/request-timeline";
 import { DecisionForm } from "@/components/decision-form";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { formatCurrency } from "@/lib/utils";
 import { fmtDate } from "@/lib/datetime";
 import type { RequestStatus } from "@/lib/enums";
@@ -63,7 +64,10 @@ export default async function ProcurementDetailPage({
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-start justify-between gap-3">
             <CardTitle>{r.item}</CardTitle>
-            <StatusBadge status={status} size="lg" />
+            <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
+              <ExportPdfButton href={`/api/procurement/${r.id}/pdf`} />
+              <StatusBadge status={status} size="lg" />
+            </div>
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
             <Detail label="Quantity" value={`${r.quantity} ${r.unit}`} />
