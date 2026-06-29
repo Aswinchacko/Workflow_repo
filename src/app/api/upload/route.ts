@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { supabaseAdmin, UPLOAD_BUCKET, ensureUploadBucket } from "@/lib/supabase";
+import { getSupabaseAdmin, UPLOAD_BUCKET, ensureUploadBucket } from "@/lib/supabase";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
@@ -33,18 +34,19 @@ export async function POST(req: Request) {
   }
 
   try {
+    const supabase = getSupabaseAdmin();
     await ensureUploadBucket();
 
     const bytes = Buffer.from(await file.arrayBuffer());
     const ext = file.type === "application/pdf" ? "pdf" : file.type.split("/")[1];
     const objectPath = `receipts/${randomUUID()}.${ext}`;
 
-    const { error } = await supabaseAdmin.storage
+    const { error } = await supabase.storage
       .from(UPLOAD_BUCKET)
       .upload(objectPath, bytes, { contentType: file.type, upsert: false });
     if (error) throw error;
 
-    const { data } = supabaseAdmin.storage.from(UPLOAD_BUCKET).getPublicUrl(objectPath);
+    const { data } = supabase.storage.from(UPLOAD_BUCKET).getPublicUrl(objectPath);
     return NextResponse.json({ url: data.publicUrl });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Upload failed";
