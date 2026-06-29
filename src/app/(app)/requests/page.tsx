@@ -20,7 +20,7 @@ export default async function RequestsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold">Requests</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Requests</h1>
         <p className="text-muted-foreground">Material purchases and petty cash claims.</p>
       </div>
 
@@ -65,7 +65,7 @@ function HubCard({
     <Link href={href}>
       <Card className="transition active:scale-[0.99]">
         <CardContent className="flex items-center gap-3 pt-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-primary">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-secondary text-primary">
             <Icon className="h-6 w-6" />
           </div>
           <div className="flex-1">
@@ -73,7 +73,7 @@ function HubCard({
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           </div>
           {badge ? (
-            <span className="flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800">
+            <span className="flex items-center gap-1 rounded-md chip-warning px-2.5 py-1 text-xs font-semibold">
               {badge} {badgeLabel}
             </span>
           ) : (

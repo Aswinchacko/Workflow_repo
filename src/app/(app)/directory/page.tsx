@@ -23,7 +23,7 @@ export default async function DirectoryPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold">Team Directory</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Team Directory</h1>
         <p className="text-muted-foreground">Find your colleagues by department.</p>
       </div>
 

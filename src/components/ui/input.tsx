@@ -9,7 +9,7 @@ export const Input = React.forwardRef<
     <input
       ref={ref}
       className={cn(
-        "h-12 w-full rounded-lg border border-input bg-card px-4 text-base outline-none transition focus-visible:ring-2 focus-visible:ring-ring placeholder:text-muted-foreground",
+        "h-12 w-full rounded-md border border-input bg-card px-4 text-base outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30 placeholder:text-muted-foreground",
         className
       )}
       {...props}
@@ -26,7 +26,7 @@ export const Textarea = React.forwardRef<
     <textarea
       ref={ref}
       className={cn(
-        "min-h-[88px] w-full rounded-lg border border-input bg-card px-4 py-3 text-base outline-none transition focus-visible:ring-2 focus-visible:ring-ring placeholder:text-muted-foreground",
+        "min-h-[88px] w-full rounded-md border border-input bg-card px-4 py-3 text-base outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30 placeholder:text-muted-foreground",
         className
       )}
       {...props}
@@ -43,7 +43,7 @@ export const Select = React.forwardRef<
     <select
       ref={ref}
       className={cn(
-        "h-12 w-full rounded-lg border border-input bg-card px-4 text-base outline-none transition focus-visible:ring-2 focus-visible:ring-ring",
+        "h-12 w-full rounded-md border border-input bg-card px-4 text-base outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30",
         className
       )}
       {...props}

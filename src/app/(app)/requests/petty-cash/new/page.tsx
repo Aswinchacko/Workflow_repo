@@ -15,7 +15,7 @@ export default async function NewPettyCashPage() {
         <ChevronLeft className="h-5 w-5" /> Petty Cash
       </Link>
 
-      <h1 className="text-2xl font-extrabold">New Petty Cash Claim</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">New Petty Cash Claim</h1>
       <PettyCashForm />
     </div>
   );

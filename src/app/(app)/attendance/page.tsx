@@ -37,7 +37,7 @@ export default async function AttendancePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold">Attendance</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Attendance</h1>
         <p className="text-muted-foreground">
           {employmentLabels[type]} ·{" "}
           {rule.overtimeEnabled
@@ -48,10 +48,10 @@ export default async function AttendancePage() {
 
       {canMarkTeamAttendance(user.role) && (
         <Link href="/attendance/team">
-          <Card className="border-primary/30 bg-primary/5 transition active:scale-[0.99]">
+          <Card className="border-primary/20 bg-secondary/50 transition hover:border-primary/40">
             <CardContent className="flex items-center gap-3 pt-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Users className="h-6 w-6" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <Users className="h-5 w-5" />
               </div>
               <div className="flex-1">
                 <p className="font-bold">Mark team attendance</p>
@@ -79,7 +79,7 @@ export default async function AttendancePage() {
               <TimeStat label="Check Out" value={todayRec?.checkOut} />
             </div>
             {todayRec?.isLate && (
-              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
+              <span className="mt-2 inline-flex items-center gap-1 rounded-md chip-warning px-2.5 py-1 text-xs font-semibold">
                 <AlertCircle className="h-3.5 w-3.5" /> Late check-in
               </span>
             )}
@@ -129,9 +129,9 @@ export default async function AttendancePage() {
                       {rec.checkOut ? fmtTime(rec.checkOut) : "—"}
                     </p>
                     <div className="mt-1 flex flex-wrap gap-1.5">
-                      {rec.isLate && <Tag className="bg-amber-100 text-amber-800">Late</Tag>}
+                      {rec.isLate && <Tag className="chip-warning">Late</Tag>}
                       {rec.overtimeHours > 0 && (
-                        <Tag className="bg-blue-100 text-blue-800">
+                        <Tag className="chip-info">
                           <TrendingUp className="h-3 w-3" /> +{rec.overtimeHours}h OT
                         </Tag>
                       )}
@@ -154,7 +154,7 @@ function TimeStat({ label, value }: { label: string; value?: Date | null }) {
   return (
     <div>
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="text-2xl font-extrabold tabular-nums">{time}</p>
+      <p className="text-2xl font-bold tabular-nums">{time}</p>
       <p className="text-xs text-muted-foreground">{period}</p>
     </div>
   );
@@ -164,7 +164,7 @@ function Tag({ children, className }: { children: React.ReactNode; className?: s
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
+        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold",
         className
       )}
     >

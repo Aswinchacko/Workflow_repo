@@ -3,24 +3,46 @@
 @tailwind utilities;
 
 :root {
-  /* Warm, high-contrast "industrial" palette. Warm hues read more clearly for
-     aging eyes than cool blues; neutrals are warm paper/stone, not cold gray. */
-  --background: 40 33% 98%; /* warm paper */
-  --foreground: 24 22% 12%; /* warm near-black, strong contrast */
+  /* Enterprise workforce SaaS — navy/slate, high contrast, 35–55 friendly */
+  --background: 220 16% 97%;
+  --foreground: 222 47% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 24 22% 12%;
-  --primary: 20 90% 42%; /* burnt construction orange */
+  --card-foreground: 222 47% 11%;
+  --primary: 217 71% 35%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 34 30% 93%; /* warm stone */
-  --secondary-foreground: 24 22% 16%;
-  --muted: 34 30% 93%;
-  --muted-foreground: 28 12% 36%; /* darkened for legibility */
-  --destructive: 2 74% 46%;
+  --secondary: 220 14% 94%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 220 14% 94%;
+  --muted-foreground: 220 9% 38%;
+  --destructive: 0 65% 45%;
   --destructive-foreground: 0 0% 100%;
-  --border: 34 22% 87%;
-  --input: 34 22% 84%;
-  --ring: 20 90% 42%;
-  --radius: 0.85rem;
+  --success: 142 55% 32%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 90% 38%;
+  --warning-foreground: 0 0% 100%;
+  --border: 220 13% 87%;
+  --input: 220 13% 84%;
+  --ring: 217 71% 35%;
+  --radius: 0.625rem;
+
+  /* Dark sidebar (desktop) */
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 220 14% 96%;
+  --sidebar-muted: 220 9% 65%;
+  --sidebar-active: 217 71% 45%;
+  --sidebar-hover: 222 40% 16%;
+
+  /* Status chip backgrounds (muted, professional) */
+  --chip-warning-bg: 38 80% 94%;
+  --chip-warning-fg: 32 80% 28%;
+  --chip-success-bg: 142 45% 93%;
+  --chip-success-fg: 142 55% 26%;
+  --chip-danger-bg: 0 60% 95%;
+  --chip-danger-fg: 0 65% 35%;
+  --chip-info-bg: 217 60% 94%;
+  --chip-info-fg: 217 71% 32%;
+  --chip-neutral-bg: 220 14% 94%;
+  --chip-neutral-fg: 220 9% 38%;
 }
 
 * {
@@ -32,19 +54,82 @@ html,
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  /* Prevent iOS auto-zoom on input focus: inputs use >=16px */
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    Roboto,
+    "Helvetica Neue",
+    sans-serif;
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Larger, comfortable base sizing for older users */
 body {
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
 }
 
 input,
 select,
 textarea {
   font-size: 16px;
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-lg border border-border bg-card shadow-sm;
+  }
+
+  .surface-elevated {
+    @apply rounded-lg border border-border bg-card shadow-md;
+  }
+
+  .chip-warning {
+    background-color: hsl(var(--chip-warning-bg));
+    color: hsl(var(--chip-warning-fg));
+  }
+
+  .chip-success {
+    background-color: hsl(var(--chip-success-bg));
+    color: hsl(var(--chip-success-fg));
+  }
+
+  .chip-danger {
+    background-color: hsl(var(--chip-danger-bg));
+    color: hsl(var(--chip-danger-fg));
+  }
+
+  .chip-info {
+    background-color: hsl(var(--chip-info-bg));
+    color: hsl(var(--chip-info-fg));
+  }
+
+  .chip-neutral {
+    background-color: hsl(var(--chip-neutral-bg));
+    color: hsl(var(--chip-neutral-fg));
+  }
+
+  .stat-panel {
+    @apply rounded-lg border border-border bg-card px-4 py-3 text-center shadow-sm;
+  }
+
+  .stat-panel-warning {
+    @apply stat-panel;
+    border-color: hsl(var(--chip-warning-fg) / 0.2);
+    background-color: hsl(var(--chip-warning-bg));
+  }
+
+  .stat-panel-success {
+    @apply stat-panel;
+    border-color: hsl(var(--chip-success-fg) / 0.2);
+    background-color: hsl(var(--chip-success-bg));
+  }
+
+  .stat-panel-info {
+    @apply stat-panel;
+    border-color: hsl(var(--chip-info-fg) / 0.2);
+    background-color: hsl(var(--chip-info-bg));
+  }
 }

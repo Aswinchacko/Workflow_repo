@@ -64,7 +64,7 @@ export function ProfileView({
       <Card className="lg:sticky lg:top-8">
         <CardContent className="flex flex-col items-center pt-6 text-center">
           <Avatar name={employee.name} src={employee.photoUrl} size={112} />
-          <h1 className="mt-3 text-2xl font-extrabold">{employee.name}</h1>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight">{employee.name}</h1>
           <p className="text-muted-foreground">{employee.jobTitle}</p>
           {employee.department?.name && (
             <span className="mt-3 rounded-full bg-secondary px-3 py-1 text-sm font-semibold">

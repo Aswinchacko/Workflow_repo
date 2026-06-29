@@ -20,7 +20,7 @@ export default async function NewProcurementPage() {
         <ChevronLeft className="h-5 w-5" /> Material Requests
       </Link>
 
-      <h1 className="text-2xl font-extrabold">New Material Request</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">New Material Request</h1>
 
       <Card>
         <CardContent className="pt-5">

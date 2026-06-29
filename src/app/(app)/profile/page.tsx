@@ -19,7 +19,7 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold">My Profile</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">My Profile</h1>
         <span className="rounded-full bg-secondary px-3 py-1 text-sm font-semibold">
           {roleLabels[user.role]}
         </span>

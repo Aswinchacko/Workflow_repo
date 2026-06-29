@@ -15,10 +15,10 @@ export function Avatar({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 font-bold text-primary",
+        "flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-semibold text-foreground",
         className
       )}
-      style={{ width: size, height: size, fontSize: size * 0.38 }}
+      style={{ width: size, height: size, fontSize: size * 0.36 }}
     >
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element

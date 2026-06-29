@@ -42,7 +42,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold">Hello, {firstName}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Hello, {firstName}</h1>
         <p className="text-muted-foreground">Here is your day at a glance.</p>
       </div>
 
@@ -51,7 +51,7 @@ export default async function HomePage() {
       <Card>
         <CardContent className="pt-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-secondary text-primary">
               <CalendarClock className="h-6 w-6" />
             </div>
             <div className="flex-1">
@@ -65,9 +65,9 @@ export default async function HomePage() {
               </p>
             </div>
             {isDone ? (
-              <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+              <CheckCircle2 className="h-6 w-6 text-success" />
             ) : (
-              <CircleDashed className="h-6 w-6 text-amber-500" />
+              <CircleDashed className="h-6 w-6 text-warning" />
             )}
           </div>
           <Link href="/attendance" className="mt-3 block">
@@ -81,9 +81,9 @@ export default async function HomePage() {
       {/* Approvals needing attention */}
       {toReview > 0 && (
         <Link href="/requests">
-          <Card className="border-primary/30 bg-primary/5">
+          <Card className="border-primary/20 bg-secondary/40">
             <CardContent className="flex items-center gap-3 pt-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
                 {toReview}
               </div>
               <div className="flex-1">
@@ -125,7 +125,7 @@ function Shortcut({
     <Link href={href}>
       <Card className="h-full transition active:scale-[0.98]">
         <CardContent className="flex h-full flex-col items-start gap-2 pt-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary text-primary">
             <Icon className="h-5 w-5" />
           </div>
           <p className="text-sm font-semibold leading-tight">{label}</p>

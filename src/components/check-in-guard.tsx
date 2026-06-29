@@ -150,7 +150,7 @@ function DesktopCheckIn({ state }: { state: "in" | "out" }) {
   }
 
   return (
-    <div className="space-y-3 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
+    <div className="space-y-3 rounded-lg border-2 border-border bg-secondary/60 p-4">
       <p className="text-center text-base font-bold">Confirm {actionLabel}?</p>
       <p className="text-center text-sm text-muted-foreground">
         This records your time now and cannot be changed.
@@ -252,7 +252,7 @@ export function CheckInGuard({ state, userId }: { state: State; userId: string }
   if (state === "done") {
     return (
       <Button size="lg" variant="outline" className="h-20 w-full text-lg" disabled>
-        <CheckCircle2 className="h-6 w-6 text-emerald-600" /> Shift complete
+        <CheckCircle2 className="h-6 w-6 text-success" /> Shift complete
       </Button>
     );
   }

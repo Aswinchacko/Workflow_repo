@@ -55,14 +55,14 @@ export default async function TeamAttendancePage() {
       </Link>
 
       <div>
-        <h1 className="text-2xl font-extrabold">Mark Team Attendance</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Mark Team Attendance</h1>
         <p className="text-muted-foreground">{fmtFullDate(new Date())}</p>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center sm:gap-3">
-        <StatBox label="Not in" value={pending} tone="amber" />
-        <StatBox label="On site" value={onSite} tone="primary" />
-        <StatBox label="Finished" value={done} tone="green" />
+        <StatBox label="Not in" value={pending} tone="warning" />
+        <StatBox label="On site" value={onSite} tone="info" />
+        <StatBox label="Finished" value={done} tone="success" />
       </div>
 
       <section>
@@ -86,18 +86,18 @@ function StatBox({
 }: {
   label: string;
   value: number;
-  tone: "amber" | "primary" | "green";
+  tone: "warning" | "info" | "success";
 }) {
-  const bg =
-    tone === "amber"
-      ? "bg-amber-100 text-amber-900"
-      : tone === "green"
-        ? "bg-emerald-100 text-emerald-900"
-        : "bg-primary/10 text-primary";
+  const cls =
+    tone === "warning"
+      ? "stat-panel-warning"
+      : tone === "success"
+        ? "stat-panel-success"
+        : "stat-panel-info";
   return (
-    <div className={`rounded-xl px-2 py-3 ${bg}`}>
-      <p className="text-2xl font-extrabold">{value}</p>
-      <p className="text-xs font-semibold">{label}</p>
+    <div className={cls}>
+      <p className="text-2xl font-bold tabular-nums">{value}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{label}</p>
     </div>
   );
 }

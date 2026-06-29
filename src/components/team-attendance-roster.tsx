@@ -132,7 +132,7 @@ export function TeamAttendanceRoster({ members }: { members: TeamMemberRow[] }) 
                   />
                 )}
                 {status === "done" && (
-                  <span className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-emerald-100 px-4 text-sm font-bold text-emerald-800">
+                  <span className="inline-flex min-h-11 items-center gap-1.5 rounded-md chip-success px-4 text-sm font-semibold">
                     <CheckCircle2 className="h-4 w-4" /> Done
                   </span>
                 )}

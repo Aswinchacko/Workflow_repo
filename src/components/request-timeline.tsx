@@ -10,10 +10,10 @@ export type TimelineStep = {
 };
 
 const dot: Record<TimelineStep["state"], string> = {
-  done: "bg-emerald-600 text-white",
-  current: "bg-amber-500 text-white",
-  rejected: "bg-red-600 text-white",
-  paid: "bg-blue-600 text-white",
+  done: "bg-success text-success-foreground",
+  current: "bg-warning text-warning-foreground",
+  rejected: "bg-destructive text-destructive-foreground",
+  paid: "bg-primary text-primary-foreground",
   upcoming: "bg-secondary text-muted-foreground",
 };
 
@@ -34,7 +34,7 @@ export function RequestTimeline({ steps }: { steps: TimelineStep[] }) {
           <div className="flex flex-col items-center">
             <span
               className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-full",
+                "flex h-7 w-7 items-center justify-center rounded-md",
                 dot[s.state]
               )}
             >
@@ -43,7 +43,7 @@ export function RequestTimeline({ steps }: { steps: TimelineStep[] }) {
             {idx < steps.length - 1 && <span className="w-px flex-1 bg-border" />}
           </div>
           <div className={cn("pb-5", idx === steps.length - 1 && "pb-0")}>
-            <p className="font-semibold leading-tight">{s.label}</p>
+            <p className="font-semibold leading-tight text-foreground">{s.label}</p>
             {s.detail && <p className="text-sm text-muted-foreground">{s.detail}</p>}
             {s.at && (
               <p className="text-xs text-muted-foreground">{fmtDateTime(s.at)}</p>

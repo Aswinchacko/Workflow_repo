@@ -35,16 +35,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-5">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-5 py-10">
       <div className="mb-8 flex flex-col items-center text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <HardHat className="h-9 w-9" />
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+          <HardHat className="h-8 w-8" />
         </div>
-        <h1 className="text-2xl font-extrabold">{t.appName}</h1>
-        <p className="mt-1 text-muted-foreground">Sign in to continue</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.appName}</h1>
+        <p className="mt-2 text-base text-muted-foreground">Sign in to continue</p>
       </div>
 
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-md shadow-elevated">
         <CardContent className="pt-5">
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
@@ -73,7 +73,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
+              <p className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive">
                 {error}
               </p>
             )}
@@ -85,7 +85,7 @@ export default function LoginPage() {
         </CardContent>
       </Card>
 
-      <p className="mt-6 max-w-xs text-center text-xs text-muted-foreground">
+      <p className="mt-8 max-w-sm text-center text-sm text-muted-foreground">
         Use the User ID and password given to you by your manager.
       </p>
     </div>
