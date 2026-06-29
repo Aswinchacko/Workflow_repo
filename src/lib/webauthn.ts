@@ -4,6 +4,16 @@
 // origin must match the browser origin exactly.
 export const rpName = "WorkSite Portal";
 
+/** Only built-in device auth: Windows Hello PIN/password, Touch ID, Android
+ *  fingerprint. Blocks USB keys, Bluetooth keys, and other external tokens. */
+export const platformAuthenticatorSelection = {
+  authenticatorAttachment: "platform" as const,
+  residentKey: "discouraged" as const,
+  userVerification: "required" as const,
+};
+
+export const internalTransport = ["internal"] as const;
+
 export function rpFromRequest(req: Request): { rpID: string; origin: string } {
   const host =
     req.headers.get("x-forwarded-host") ??

@@ -43,12 +43,25 @@ export async function POST(req: Request) {
 
   const { credential, credentialDeviceType } = verification.registrationInfo;
 
+  if (credentialDeviceType === "multiDevice") {
+    return NextResponse.json(
+      {
+        error: "Please use your device PIN or fingerprint, not a USB or Bluetooth security key.",
+        verified: false,
+      },
+      { status: 400 }
+    );
+  }
+
+  // Replace any old external keys with this platform enrollment.
+  await prisma.authenticator.deleteMany({ where: { userId } });
+
   await prisma.authenticator.create({
     data: {
       credentialID: credential.id,
       publicKey: Buffer.from(credential.publicKey),
       counter: credential.counter,
-      transports: credential.transports ? JSON.stringify(credential.transports) : null,
+      transports: JSON.stringify(["internal"]),
       deviceLabel: credentialDeviceType,
       userId,
     },

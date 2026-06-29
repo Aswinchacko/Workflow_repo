@@ -3,7 +3,7 @@ import { generateRegistrationOptions } from "@simplewebauthn/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { rpName, rpFromRequest } from "@/lib/webauthn";
+import { rpName, rpFromRequest, platformAuthenticatorSelection, internalTransport } from "@/lib/webauthn";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,12 +30,10 @@ export async function POST(req: Request) {
     attestationType: "none",
     excludeCredentials: existing.map((a) => ({
       id: a.credentialID,
-      transports: a.transports ? JSON.parse(a.transports) : undefined,
+      transports: [...internalTransport],
     })),
-    authenticatorSelection: {
-      residentKey: "discouraged",
-      userVerification: "required", // forces fingerprint / Face / device PIN
-    },
+    authenticatorSelection: platformAuthenticatorSelection,
+    preferredAuthenticatorType: "localDevice",
   });
 
   await prisma.user.update({
