@@ -28,17 +28,67 @@ async function postJSON(url: string, body?: unknown) {
   return data;
 }
 
-async function verifyIdentity() {
+function setupKey(userId: string) {
+  return `webauthn-ready-${window.location.hostname}-${userId}`;
+}
+
+function isDeviceSetUp(userId: string) {
+  try {
+    return localStorage.getItem(setupKey(userId)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markDeviceSetUp(userId: string) {
+  try {
+    localStorage.setItem(setupKey(userId), "1");
+  } catch {
+    /* private browsing */
+  }
+}
+
+async function enrollOnThisDevice() {
+  const reg = await postJSON("/api/webauthn/register/options");
+  const attestation = await startRegistration({ optionsJSON: reg.options });
+  const result = await postJSON("/api/webauthn/register/verify", attestation);
+  if (!result.verified) throw new Error("Could not set up device verification.");
+}
+
+/** True when auth failed because this device has no passkey yet (e.g. enrolled on phone). */
+function needsEnrollmentOnThisDevice(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  const name = err instanceof DOMException ? err.name : "";
+  return (
+    name === "NotAllowedError" ||
+    /passkey|no credentials|not found|not available|unknown credential/i.test(msg)
+  );
+}
+
+async function verifyIdentity(userId: string) {
   const auth = await postJSON("/api/webauthn/authenticate/options");
-  if (auth.hasCredentials) {
+  const setUpHere = isDeviceSetUp(userId);
+
+  if (!auth.hasCredentials || !setUpHere) {
+    // First time on this device/browser — set up Windows Hello / phone PIN directly
+    // (skips the confusing "No passkeys available" popup).
+    await enrollOnThisDevice();
+    markDeviceSetUp(userId);
+    return;
+  }
+
+  try {
     const assertion = await startAuthentication({ optionsJSON: auth.options });
     const result = await postJSON("/api/webauthn/authenticate/verify", assertion);
     if (!result.verified) throw new Error("Could not verify your identity.");
-  } else {
-    const reg = await postJSON("/api/webauthn/register/options");
-    const attestation = await startRegistration({ optionsJSON: reg.options });
-    const result = await postJSON("/api/webauthn/register/verify", attestation);
-    if (!result.verified) throw new Error("Could not set up device verification.");
+    markDeviceSetUp(userId);
+  } catch (e) {
+    if (needsEnrollmentOnThisDevice(e)) {
+      await enrollOnThisDevice();
+      markDeviceSetUp(userId);
+      return;
+    }
+    throw e;
   }
 }
 
@@ -61,7 +111,7 @@ function friendlyError(raw: string, mobile: boolean): string {
   return raw;
 }
 
-export function CheckInGuard({ state }: { state: State }) {
+export function CheckInGuard({ state, userId }: { state: State; userId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -81,7 +131,7 @@ export function CheckInGuard({ state }: { state: State }) {
     setBusy(true);
     setError("");
     try {
-      await verifyIdentity();
+      await verifyIdentity(userId);
       await toggleAttendance();
       router.refresh();
     } catch (e) {
@@ -95,7 +145,7 @@ export function CheckInGuard({ state }: { state: State }) {
   const HintIcon = mobile ? Fingerprint : Monitor;
   const hint = mobile
     ? "Use your phone fingerprint or screen PIN. This cannot be undone."
-    : "Use your Windows PIN or password when prompted. No USB key. This cannot be undone.";
+    : "First time on this laptop? If you see “No passkeys”, click Close — then enter your Windows PIN to set up. After that, check-in uses your PC PIN only.";
 
   return (
     <div className="space-y-2">

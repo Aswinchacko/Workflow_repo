@@ -53,11 +53,14 @@ export async function POST(req: Request) {
     );
   }
 
-  // Replace any old external keys with this platform enrollment.
-  await prisma.authenticator.deleteMany({ where: { userId } });
+  // Keep one passkey per device (phone + laptop can both work). Remove USB keys only.
+  await prisma.authenticator.deleteMany({
+    where: { userId, deviceLabel: "multiDevice" },
+  });
 
-  await prisma.authenticator.create({
-    data: {
+  await prisma.authenticator.upsert({
+    where: { credentialID: credential.id },
+    create: {
       credentialID: credential.id,
       publicKey: Buffer.from(credential.publicKey),
       counter: credential.counter,
@@ -65,7 +68,25 @@ export async function POST(req: Request) {
       deviceLabel: credentialDeviceType,
       userId,
     },
+    update: {
+      publicKey: Buffer.from(credential.publicKey),
+      counter: credential.counter,
+      transports: JSON.stringify(["internal"]),
+      deviceLabel: credentialDeviceType,
+      lastUsedAt: new Date(),
+    },
   });
+
+  // Cap at 5 devices per user (drop oldest).
+  const all = await prisma.authenticator.findMany({
+    where: { userId },
+    orderBy: { lastUsedAt: "asc" },
+  });
+  if (all.length > 5) {
+    await prisma.authenticator.deleteMany({
+      where: { id: { in: all.slice(0, all.length - 5).map((a) => a.id) } },
+    });
+  }
 
   await prisma.user.update({ where: { id: userId }, data: { currentChallenge: null } });
 
